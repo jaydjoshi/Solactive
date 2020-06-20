@@ -9,26 +9,25 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  *
  */
 @ResponseStatus(HttpStatus.NO_CONTENT)
-public class InvalidTickException extends RuntimeException {
+public class NoTickerAvailableException extends RuntimeException {
 
 
 	private static final long serialVersionUID = 8339587788665030327L;
 
-	public InvalidTickException() {
+	public NoTickerAvailableException() {
 		super();
 		
 	}
 
-	public InvalidTickException(String message) {
+	public NoTickerAvailableException(String message) {
 		super(message);
 		
 	}
 
-	public InvalidTickException(Throwable cause) {
+	public NoTickerAvailableException(Throwable cause) {
 		super(cause);
 		
 	}
 	
 	
-
 }

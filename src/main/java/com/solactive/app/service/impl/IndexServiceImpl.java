@@ -8,57 +8,55 @@ import org.springframework.stereotype.Service;
 
 import com.solactive.app.aggregator.AllTickersAggregator;
 import com.solactive.app.aggregator.TickerAggregator;
+import com.solactive.app.exception.NoTickerAvailableException;
+import com.solactive.app.exception.TickerNotAvailableException;
 import com.solactive.app.model.Statistics;
 import com.solactive.app.model.Tick;
 import com.solactive.app.service.IndexService;
 
 @Service
 public class IndexServiceImpl implements IndexService {
-	
-	
-	Map<String,TickerAggregator> map = AllTickersAggregator.getTickerToAggregateMap();
-	
+
+	Map<String, TickerAggregator> map = AllTickersAggregator.getTickerToAggregateMap();
+
 	Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
 
 	@Override
 	public boolean insertTicks(Tick tick) {
-		
+
 		try {
-			
 			logger.debug("inside insertTicks");
 			final long currentTime = System.currentTimeMillis();
 			map.computeIfAbsent(tick.getInstrument(), k -> new TickerAggregator()).add(tick, currentTime);
-		}finally {
-			
+		} finally {
+
 		}
 		// debug
-		logger.debug("Map: \n"+map);
-		
+		logger.debug("Map: \n" + map);
+
 		return false;
 	}
 
 	@Override
 	public Statistics getStatistics(long currentTimeStamp) {
-		
-		if(map.isEmpty()) {
-			// TODO: Create a global exception handler
-			throw new RuntimeException();
-		}else {
+
+		if (map.isEmpty()) {
+			throw new NoTickerAvailableException();
+		} else {
 			return AllTickersAggregator.getRootStatistics();
 		}
-		
+
 	}
 
 	@Override
 	public Statistics getStatistics(long currentTimeStamp, String instrument) {
-		
-		if(map.containsKey(instrument)) {
+
+		if (map.containsKey(instrument)) {
 			return map.get(instrument).getStatistics();
+		} else {
+			throw new TickerNotAvailableException();
 		}
-		else { // TODO: Create a global exception handler
-			throw new RuntimeException();
-		}
-		
+
 	}
 
 }

@@ -1,6 +1,6 @@
 # Solactive Code Challenge
 
-Foobar is a Python library for dealing with word pluralization.
+Solactive code challenge solution by Jay Joshi.
 
 ## How to run the project?
 
@@ -9,6 +9,7 @@ git clone https://github.com/jaydjoshi/Solactive.git
 cd to the cloned project
 ./mvnw spring-boot:run
 ```
+
 ## Assumptions
 
 

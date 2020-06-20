@@ -180,7 +180,7 @@ public class IndexControllerTest {
 							.contentType("application/json")
 							.content(objectMapper.writeValueAsString(tick)));
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
+						
 						e.printStackTrace();
 					}
 				}));
@@ -194,7 +194,7 @@ public class IndexControllerTest {
 			try {
 				f.get();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 		});
