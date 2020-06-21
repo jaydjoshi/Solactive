@@ -17,10 +17,11 @@ import com.solactive.app.service.IndexService;
 @Service
 public class IndexServiceImpl implements IndexService {
 
-	Map<String, TickerAggregator> map = AllTickersAggregator.getTickerToAggregateMap();
+	private Map<String, TickerAggregator> map = AllTickersAggregator.getTickerToAggregateMap();
 
-	Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
 
+	// TODO: updating stats is O(n) right now as we iterate over 60 s data.
 	@Override
 	public boolean insertTicks(Tick tick) {
 
@@ -39,11 +40,11 @@ public class IndexServiceImpl implements IndexService {
 
 	// TODO: Actual sliding window is not implement, as we are storing stats only during inserts
 	// there can be a gap between insert requests and statistics call
-	// Also, updating stats is O(n) right now as we iterate over 60 s data.
 	@Override
 	public Statistics getStatistics(long currentTimeStamp) {
 
 		if (map.isEmpty()) {
+			logger.error("No ticker data found in last 60s");
 			throw new NoTickerAvailableException();
 		} else {
 			return AllTickersAggregator.getRootStatistics();
@@ -57,6 +58,7 @@ public class IndexServiceImpl implements IndexService {
 		if (map.containsKey(instrument)) {
 			return map.get(instrument).getStatistics();
 		} else {
+			logger.error("ticker {} data is not found in last 60s", instrument);
 			throw new TickerNotAvailableException();
 		}
 
