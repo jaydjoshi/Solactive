@@ -35,7 +35,10 @@ public class TickerAggregator{
 	 * @return min timestamp in the queue
 	 */
 	public long getMinimumTimestamp() {
-		return tickPriorityBlockingQueue.peek().getTimestamp();
+		if(!tickPriorityBlockingQueue.isEmpty()) {
+			return tickPriorityBlockingQueue.peek().getTimestamp();
+		}
+		return 0l;
 	}
 
 	/**
@@ -50,7 +53,8 @@ public class TickerAggregator{
 	 */
 	public Statistics getStatistics(final long currentTime) {
 		
-		if(currentTime - getMinimumTimestamp() > IndexConstant.DEFAULT_SLIDING_WINDOW_MS){
+		// getMinimumTimestamp = 0 means queue is empty
+		if(getMinimumTimestamp() > 0l && (currentTime - getMinimumTimestamp() > IndexConstant.DEFAULT_SLIDING_WINDOW_MS)){
 			try {
 				//lock.lock();
 				removeOldTicksFromHead(currentTime);
@@ -128,12 +132,14 @@ public class TickerAggregator{
 		double min = Double.MAX_VALUE;
 		double max = 0d;
 		
-		for(ImmutableTick tick : tickPriorityBlockingQueue) {
-			double price = tick.getPrice();
-			sum = sum+price;
-			min = Math.min(min, price);
-			max = Math.max(max, price);
-			
+		if(!tickPriorityBlockingQueue.isEmpty()) {
+			for(ImmutableTick tick : tickPriorityBlockingQueue) {
+				double price = tick.getPrice();
+				sum = sum+price;
+				min = Math.min(min, price);
+				max = Math.max(max, price);
+				
+			}
 		}
 		
 //		// use CAS
@@ -145,7 +151,11 @@ public class TickerAggregator{
 //				return;
 //			}
 //		}
-		
+		// if no data available
+		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+			statistics = new Statistics(0d, 0d, 0d, 0l);
+			return;
+		}
 		statistics = new Statistics(sum/count, max, min, count);
 		
 	}

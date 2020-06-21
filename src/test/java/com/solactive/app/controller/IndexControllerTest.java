@@ -45,6 +45,8 @@ public class IndexControllerTest {
 	@Test
 	public void contexLoads() throws Exception {
 		assertThat(indexController).isNotNull();
+		assertThat(mockMvc).isNotNull();
+		assertThat(objectMapper).isNotNull();
 	}
 	
 	
@@ -68,6 +70,7 @@ public class IndexControllerTest {
 		
 		System.out.println(objectMapper.writeValueAsString(tick));
 		
+		System.out.println(this.mockMvc);
 		this.mockMvc.perform(post("/ticks")
 				.contentType("application/json")
 				.content(objectMapper.writeValueAsString(tick)))
@@ -81,6 +84,7 @@ public class IndexControllerTest {
 		tick.setPrice(100);
 		tick.setTimestamp(System.currentTimeMillis() - 60001);
 		
+		System.out.println(this.mockMvc);
 		this.mockMvc.perform(post("/ticks")
 				.contentType("application/json")
 				.content(objectMapper.writeValueAsString(tick)))
@@ -102,6 +106,7 @@ public class IndexControllerTest {
 			tick.setTimestamp(currentTime - i*1000);
 			tickList.add(tick);
 			
+			System.out.println(this.mockMvc);
 			this.mockMvc.perform(post("/ticks")
 					.contentType("application/json")
 					.content(objectMapper.writeValueAsString(tick)));
@@ -181,7 +186,6 @@ public class IndexControllerTest {
 							.content(objectMapper.writeValueAsString(tick)));
 					} catch (Exception e) {
 						
-						e.printStackTrace();
 					}
 				}));
 						
@@ -195,7 +199,6 @@ public class IndexControllerTest {
 				f.get();
 			} catch (Exception e) {
 				
-				e.printStackTrace();
 			}
 		});
 		

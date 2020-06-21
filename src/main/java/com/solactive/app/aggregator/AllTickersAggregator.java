@@ -24,6 +24,7 @@ public class AllTickersAggregator {
 	}
 
 	public static Statistics getRootStatistics(long currentTime) {
+		reCalculateRoot(currentTime);
 		return rootStatistics;
 	}
 	
@@ -41,7 +42,7 @@ public class AllTickersAggregator {
 		
 		for(TickerAggregator ticker: tickerToAggregateMap.values()) {
 			Statistics tickerStats = ticker.getStatistics(currentTime);
-			if(tickerStats == null) {
+			if(tickerStats == null || isEmpty(tickerStats)) {
 				continue;
 			}
 			
@@ -66,9 +67,26 @@ public class AllTickersAggregator {
 //            }
 //        }
 		
+		// if no data available
+		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+			rootStatistics = new Statistics(0d, 0d, 0d, 0l);
+			return;
+		}
+		
 		rootStatistics = new Statistics(sum/count, max, min, count);
 		
 	}
+
+	/**
+	 * 
+	 * @param tickerStats
+	 * @return
+	 */
+	private static boolean isEmpty(Statistics tickerStats) {
+		
+		return (tickerStats.getAvg() == 0d && tickerStats.getMax()==0d && tickerStats.getMin()==0d && tickerStats.getCount()==0l);
+	}
+
 	
 
 }

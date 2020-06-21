@@ -44,7 +44,7 @@ public class IndexServiceImpl implements IndexService {
 			throw new InvalidTickException();
 		}
 		logger.debug("Map: \n" + instrumentToTickerAggregatorMap);
-		logger.info("Instrument {} inserted, total size of {} ticks is {}: ", tick.getInstrument(), tick.getInstrument(), size);
+		logger.debug("Instrument {} inserted, total size of {} ticks is {}: ", tick.getInstrument(), tick.getInstrument(), size);
 
 	}
 
