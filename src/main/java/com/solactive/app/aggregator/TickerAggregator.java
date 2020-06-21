@@ -1,30 +1,33 @@
 package com.solactive.app.aggregator;
 
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.solactive.app.constant.IndexConstant;
+import com.solactive.app.model.ImmutableTick;
 import com.solactive.app.model.Statistics;
-import com.solactive.app.model.Tick;
 
 public class TickerAggregator{
 
-	private volatile PriorityBlockingQueue<Tick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, Tick.timestampComparator);
+	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);
+
 	// create immutable class
+	//private  AtomicReference<Statistics>  statistics;
 	private volatile Statistics statistics;
 	private final Lock lock;
 	
 	public TickerAggregator(){
 		
-		statistics = new Statistics();
 		lock = new ReentrantLock();
 	}
 	
-	public PriorityBlockingQueue<Tick> getTickPriorityBlockingQueue() {
-		return tickPriorityBlockingQueue;
+	@Override
+	public String toString() {
+		return "TickerQueue [tickPriorityBlockingQueue=" + tickPriorityBlockingQueue + ", statistics=" + statistics
+				+ ", lock=" + lock + "]";
 	}
-	
 	
 	/**
 	 * 
@@ -60,12 +63,6 @@ public class TickerAggregator{
 	}
 	
 
-	@Override
-	public String toString() {
-		return "TickerQueue [tickPriorityBlockingQueue=" + tickPriorityBlockingQueue + ", statistics=" + statistics
-				+ ", lock=" + lock + "]";
-	}
-
 	/**
 	 * add method will do the following,
 	 * 1. remove all the ticks older than 60 s
@@ -78,7 +75,7 @@ public class TickerAggregator{
 	 * @param currentTime
 	 * @return
 	 */
-	public boolean addAndUpdateStatistics(Tick e, final long currentTime) {
+	public boolean addAndUpdateStatistics(ImmutableTick e, final long currentTime) {
 		
 		boolean val = false;
 		try {
@@ -100,26 +97,12 @@ public class TickerAggregator{
 		
 	}
 	
-	/**
-	 * using comapareAndSet to set value of min timestamp
-	 * @param tick
-	 */
-//	private void setMinTimestamp(Tick tick) {
-//		
-//		while(true) {
-//			long existingVal = minimumTimestamp.get();
-//			long newVal = tick.getTimestamp();
-//			if(minimumTimestamp.compareAndSet(existingVal, newVal)) {
-//				return;
-//			}
-//		}
-//		
-//	}
 
 	/**
 	 * remove using remove if
 	 * @param currentTime
 	 */
+	@SuppressWarnings("unused")
 	@Deprecated
 	private void removeOldTicks(final long currentTime) {
 		tickPriorityBlockingQueue.removeIf(t -> (currentTime - t.getTimestamp()) > IndexConstant.DEFAULT_SLIDING_WINDOW_MS);
@@ -137,19 +120,18 @@ public class TickerAggregator{
 		
 	}
 	
-
 	/**
 	 * recalculate statistics of the ticker after each inserts
 	 * TODO : this is bruteforce, see if calculations can be done while removings
 	 */
 	private void reCalculate() {
-		
+			
 		long count = tickPriorityBlockingQueue.size();
 		double sum=0d;
 		double min = Double.MAX_VALUE;
 		double max = 0d;
 		
-		for(Tick tick : tickPriorityBlockingQueue) {
+		for(ImmutableTick tick : tickPriorityBlockingQueue) {
 			double price = tick.getPrice();
 			sum = sum+price;
 			min = Math.min(min, price);
@@ -157,10 +139,17 @@ public class TickerAggregator{
 			
 		}
 		
-		this.statistics.setAvg(sum/count);
-		this.statistics.setCount(count);
-		this.statistics.setMax(max);
-		this.statistics.setMin(min);
+//		// use CAS
+//		while(true) {
+//			Statistics existingValue = statistics.get();
+//			Statistics newValue = new Statistics(sum/count, max, min, count);
+//
+//			if(statistics.compareAndSet(existingValue, newValue)) {
+//				return;
+//			}
+//		}
+		
+		statistics = new Statistics(sum/count, max, min, count);
 		
 	}
 

@@ -2,6 +2,7 @@ package com.solactive.app.aggregator;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.solactive.app.model.Statistics;
 
@@ -14,7 +15,8 @@ public class AllTickersAggregator {
 	
 	private static Map<String,TickerAggregator> tickerToAggregateMap = new ConcurrentHashMap<>();
 	
-	private static Statistics rootStatistics = new Statistics();
+	//private static AtomicReference<Statistics> rootStatistics;
+	private static Statistics rootStatistics;
 
 	public static Map<String, TickerAggregator> getTickerToAggregateMap() {
 		return tickerToAggregateMap;
@@ -24,7 +26,11 @@ public class AllTickersAggregator {
 		return rootStatistics;
 	}
 	
-	
+	/**
+	 *  recalculates stats at all instruments level
+	 *  
+	 * @param currentTime
+	 */
 	public static void reCalculateRoot(long currentTime) {
 		
 		long count = 0l;
@@ -49,11 +55,17 @@ public class AllTickersAggregator {
 			count = count+tickerCount;
 		}
 		
+//		// use CAS
+//		while(true) {
+//            Statistics existingValue = rootStatistics.get();
+//            Statistics newValue = new Statistics(sum/count, max, min, count);
+//            
+//            if(rootStatistics.compareAndSet(existingValue, newValue)) {
+//                return;
+//            }
+//        }
 		
-		rootStatistics.setAvg(sum/count);
-		rootStatistics.setCount(count);
-		rootStatistics.setMax(max);
-		rootStatistics.setMin(min);
+		rootStatistics = new Statistics(sum/count, max, min, count);
 		
 	}
 	

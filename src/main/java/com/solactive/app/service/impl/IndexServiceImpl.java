@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 
 import com.solactive.app.aggregator.AllTickersAggregator;
 import com.solactive.app.aggregator.TickerAggregator;
+import com.solactive.app.exception.InvalidTickException;
 import com.solactive.app.exception.NoTickerAvailableException;
 import com.solactive.app.exception.TickerNotAvailableException;
+import com.solactive.app.model.ImmutableTick;
 import com.solactive.app.model.Statistics;
 import com.solactive.app.model.Tick;
 import com.solactive.app.service.IndexService;
@@ -21,21 +23,36 @@ public class IndexServiceImpl implements IndexService {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
 
-	// TODO: updating stats is O(n) right now as we iterate over 60 s data.
+
+	/**
+	 * TODO: updating stats is O(n) right now as we iterate over 60 s data.
+	 * @param tick
+	 * @return boolean
+	 */
 	@Override
-	public boolean insertTicks(Tick tick) {
+	public void insertTicks(Tick tick) {
 
 		try {
 			logger.debug("inside insertTicks");
+			ImmutableTick immTick = convertToImmutableTick(tick);
 			final long currentTime = System.currentTimeMillis();
-			map.computeIfAbsent(tick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(tick, currentTime);
-		} finally {
-
+			map.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(immTick, currentTime);
+		} catch(Exception e) {
+			logger.error("Unable to insert ticker {} data", tick);
+			throw new InvalidTickException();
 		}
 		// debug
 		logger.debug("Map: \n" + map);
 
-		return false;
+	}
+
+	/**
+	 * 
+	 * @param tick
+	 * @return immutable tick
+	 */
+	private ImmutableTick convertToImmutableTick(Tick tick) {
+		return new ImmutableTick(tick.getInstrument(), tick.getPrice(), tick.getTimestamp());
 	}
 
 	/**

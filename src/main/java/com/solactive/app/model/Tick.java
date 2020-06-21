@@ -3,7 +3,6 @@
  */
 package com.solactive.app.model;
 
-import java.util.Comparator;
 
 /**
  * @author jay
@@ -33,44 +32,7 @@ public class Tick{
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((instrument == null) ? 0 : instrument.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(price);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		result = prime * result + (int) (timestamp ^ (timestamp >>> 32));
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Tick other = (Tick) obj;
-		if (instrument == null) {
-			if (other.instrument != null)
-				return false;
-		} else if (!instrument.equals(other.instrument))
-			return false;
-		if (Double.doubleToLongBits(price) != Double.doubleToLongBits(other.price))
-			return false;
-		if (timestamp != other.timestamp)
-			return false;
-		return true;
-	}
-	
-	@Override
-	public String toString() {
-		return "Tick [instrument=" + instrument + ", price=" + price + ", timestamp=" + timestamp + "]";
-	}
-	
-	public static Comparator<Tick> timestampComparator = (x,y) -> Long.compare(x.timestamp, y.timestamp);
+
 	
 	
 }

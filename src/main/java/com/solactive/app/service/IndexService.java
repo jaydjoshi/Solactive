@@ -10,7 +10,7 @@ public interface IndexService {
 	 * @param tick
 	 * @return boolean value whether tick was inserted or not
 	 */
-	public boolean insertTicks(Tick tick);
+	public void insertTicks(Tick tick);
 
 	/**
 	 * 
