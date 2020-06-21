@@ -24,15 +24,23 @@ Hence, set initial value of map to 50,000
 4. Integrate JMeter tests in the project
 5. There is lot of duplicate code in TickerAggregatorNonBlocking and TickerAggregator class. I was trying multiple options for testing hence the duplicate code.
 once benchmarking is done, I would remove one of the 2 classes
+6. As we are dealing with financial data we should use BigDecimal instead of double
 
-## TODO Priority
-1. accuracy
-	- implement get call scenarios (done)
-2. efficiency
-	- use, volatile, atomic and final (done). reCalculate done
-3. testing
-	JMH and Jmeter and curl
-	
+## JMeter test results
+Used Jmeter GUI to test post API calls.
+Used NYSE.csv data in src/main/resources/static folder
+
+### With 10 users and 10,000 iterations
+Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
+--- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
+POST Ticks HTTP Request|100000|83|3|1026|41.69|0.000%|119.20486|14.09|27.27|121.0
+TOTAL|100000|83|3|1026|41.69|0.000%|119.20486|14.09|27.27|121.0
+
+### With 100 users and 1000 iterations
+Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
+--- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
+POST Ticks HTTP Request|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
+TOTAL|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
 
 ## Whether you liked the challenge?
 Absolutely! challenge is fantastic. had a great time working on it. Kudos to the team who created this challenge. :)
