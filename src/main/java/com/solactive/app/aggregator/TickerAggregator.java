@@ -44,6 +44,8 @@ public class TickerAggregator{
 	 * i.e stats are not updated. later, statistics is called so we need to update the stats before sending)
 	 * 		2.1. remove old ticks
 	 * 		2.2. recalculate and send statistics
+	 * 
+	 * Note - no need to recalulate root stats as reCalculateRoot() will call getStatistics of each ticker
 	 */
 	public Statistics getStatistics(final long currentTime) {
 		
@@ -52,8 +54,7 @@ public class TickerAggregator{
 				//lock.lock();
 				removeOldTicksFromHead(currentTime);
 				this.reCalculate();
-				// no need to recalulate root stats as reCalculateRoot() will call getStatistics of each ticker
-				//AllTickersAggregator.reCalculateRoot(currentTime);
+				
 			}
 			finally {
 				//lock.unlock();
@@ -69,6 +70,8 @@ public class TickerAggregator{
 	 * 2. add tick in priority queue
 	 * 3. recalculate statistics for the instrument
 	 * 
+	 * Note - no need to recalulate root stats as reCalculateRoot() will call getStatistics of each ticker
+	 * 
 	 * Using lock to avoid thread interference only for same ticker
 	 * 
 	 * @param e
@@ -80,15 +83,9 @@ public class TickerAggregator{
 		boolean val = false;
 		try {
 			lock.lock();
-			//System.out.println("Before removing old tick\n"+tickPriorityBlockingQueue.size());
 			removeOldTicksFromHead(currentTime);
-			//System.out.println("After removing old tick\n"+tickPriorityBlockingQueue.size());
 			val = tickPriorityBlockingQueue.add(e);
-			//System.out.println("After adding new tick\n"+tickPriorityBlockingQueue.size());
-			//System.out.println("After adding new tick\n"+tickPriorityBlockingQueue.peek());
-			
 			this.reCalculate();
-			//AllTickersAggregator.reCalculateRoot(currentTime);
 		}finally {
 			lock.unlock();
 		}
@@ -122,7 +119,7 @@ public class TickerAggregator{
 	
 	/**
 	 * recalculate statistics of the ticker after each inserts
-	 * TODO : this is bruteforce, see if calculations can be done while removings
+	 * TODO : this is bruteforce O(n), see if calculations can be done while removing
 	 */
 	private void reCalculate() {
 			

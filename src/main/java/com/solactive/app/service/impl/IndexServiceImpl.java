@@ -19,7 +19,8 @@ import com.solactive.app.service.IndexService;
 @Service
 public class IndexServiceImpl implements IndexService {
 
-	private Map<String, TickerAggregator> map = AllTickersAggregator.getTickerToAggregateMap();
+	// map of intrument to TickerAggregator
+	private Map<String, TickerAggregator> instrumentToTickerAggregatorMap = AllTickersAggregator.getTickerToAggregateMap();
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
 
@@ -32,17 +33,16 @@ public class IndexServiceImpl implements IndexService {
 	@Override
 	public void insertTicks(Tick tick) {
 
+		logger.debug("inside insertTicks");
 		try {
-			logger.debug("inside insertTicks");
 			ImmutableTick immTick = convertToImmutableTick(tick);
 			final long currentTime = System.currentTimeMillis();
-			map.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(immTick, currentTime);
+			instrumentToTickerAggregatorMap.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(immTick, currentTime);
 		} catch(Exception e) {
 			logger.error("Unable to insert ticker {} data", tick);
 			throw new InvalidTickException();
 		}
-		// debug
-		logger.debug("Map: \n" + map);
+		logger.debug("Map: \n" + instrumentToTickerAggregatorMap);
 
 	}
 
@@ -73,7 +73,7 @@ public class IndexServiceImpl implements IndexService {
 	public Statistics getStatistics() {
 
 		final long currentTime = System.currentTimeMillis();
-		if (map.isEmpty()) {
+		if (instrumentToTickerAggregatorMap.isEmpty()) {
 			logger.error("No ticker data found in last 60s");
 			throw new NoTickerAvailableException();
 		} else {
@@ -95,8 +95,8 @@ public class IndexServiceImpl implements IndexService {
 	public Statistics getStatistics( String instrument) {
 
 		final long currentTime = System.currentTimeMillis();
-		if (map.containsKey(instrument)) {
-			return map.get(instrument).getStatistics(currentTime);
+		if (instrumentToTickerAggregatorMap.containsKey(instrument)) {
+			return instrumentToTickerAggregatorMap.get(instrument).getStatistics(currentTime);
 		} else {
 			logger.error("ticker {} data is not found in last 60s", instrument);
 			throw new TickerNotAvailableException();

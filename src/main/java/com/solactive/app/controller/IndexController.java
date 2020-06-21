@@ -28,7 +28,7 @@ public class IndexController {
 	/**
 	 * 
 	 * @param tick
-	 * @return
+	 * @return HTTP status 201 when tick is inserted and HTTP status 204 when tick is invalid
 	 */
 	@PostMapping("/ticks")
 	public ResponseEntity<Success> insertTicks(@RequestBody Tick tick) {
@@ -43,7 +43,7 @@ public class IndexController {
 	
 	/**
 	 * 
-	 * @return
+	 * @return Statistics
 	 */
 	@GetMapping("/statistics")
 	public Statistics getStatistics() {
@@ -55,7 +55,7 @@ public class IndexController {
 	/**
 	 * 
 	 * @param instrument
-	 * @return
+	 * @return Statistics
 	 */
 	@GetMapping("/statistics/{instrument}")
 	public Statistics getStatisticsOfInstrument(@PathVariable String instrument) {

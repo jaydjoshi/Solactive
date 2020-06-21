@@ -67,8 +67,6 @@ public class SingleTickerTest {
 		this.mockMvc.perform(get("/statistics/MSFT"))
 			.andExpect(status().isOk());
 			
-		
-			
 	
 	}
 	
