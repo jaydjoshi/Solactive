@@ -2,7 +2,6 @@ package com.solactive.app.aggregator;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.solactive.app.model.Statistics;
 
@@ -16,8 +15,7 @@ public class AllTickersAggregator {
 	// setting initial capacity as 50000 and load factor as one, so that rehashing does not happen
 	private static Map<String,TickerAggregator> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
 	
-	//private static AtomicReference<Statistics> rootStatistics;
-	private static Statistics rootStatistics;
+	private static volatile Statistics rootStatistics;
 
 	public static Map<String, TickerAggregator> getTickerToAggregateMap() {
 		return tickerToAggregateMap;
@@ -57,15 +55,6 @@ public class AllTickersAggregator {
 			count = count+tickerCount;
 		}
 		
-//		// use CAS
-//		while(true) {
-//            Statistics existingValue = rootStatistics.get();
-//            Statistics newValue = new Statistics(sum/count, max, min, count);
-//            
-//            if(rootStatistics.compareAndSet(existingValue, newValue)) {
-//                return;
-//            }
-//        }
 		
 		// if no data available
 		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {

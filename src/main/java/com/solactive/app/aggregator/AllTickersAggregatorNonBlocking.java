@@ -3,13 +3,11 @@ package com.solactive.app.aggregator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.solactive.app.model.Statistics;
 
 /**
- * non blocking algo using cas instead of locks
+ * trying non blocking algo using cas
  * @author jay
  *
  */
@@ -19,7 +17,6 @@ public class AllTickersAggregatorNonBlocking {
 	private static Map<String,TickerAggregatorNonBlocking> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
 	
 	private static AtomicReference<Statistics> rootStatistics = new AtomicReference<>();
-	
 
 	public static Map<String, TickerAggregatorNonBlocking> getTickerToAggregateMap() {
 		return tickerToAggregateMap;
