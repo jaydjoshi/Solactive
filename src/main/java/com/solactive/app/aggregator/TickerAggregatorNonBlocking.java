@@ -9,17 +9,22 @@ import com.solactive.app.constant.IndexConstant;
 import com.solactive.app.model.ImmutableTick;
 import com.solactive.app.model.Statistics;
 
-public class TickerAggregator implements ITickerAggregator{
+/**
+ * trying non blocking algo using cas
+ * @author jay
+ *
+ */
+public class TickerAggregatorNonBlocking implements ITickerAggregator{
 
 	// setting initial capacity to 100
 	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);
 
 	// create immutable class
-	//private  AtomicReference<Statistics>  statistics;
-	private volatile Statistics statistics;
+	private  AtomicReference<Statistics>  statistics;
+	//private volatile Statistics statistics;
 	private final Lock lock;
 	
-	public TickerAggregator(){
+	public TickerAggregatorNonBlocking(){
 		
 		lock = new ReentrantLock();
 	}
@@ -65,7 +70,7 @@ public class TickerAggregator implements ITickerAggregator{
 				//lock.unlock();
 			}
 		}
-		return statistics;
+		return statistics.get();
 	}
 	
 
@@ -86,12 +91,12 @@ public class TickerAggregator implements ITickerAggregator{
 	public int addAndUpdateStatistics(ImmutableTick e, final long currentTime) {
 		
 		try {
-			lock.lock();
+			//lock.lock();
 			removeOldTicksFromHead(currentTime);
 			tickPriorityBlockingQueue.add(e);
 			this.reCalculate();
 		}finally {
-			lock.unlock();
+			//lock.unlock();
 		}
 		
 		return tickPriorityBlockingQueue.size();
@@ -142,22 +147,24 @@ public class TickerAggregator implements ITickerAggregator{
 			}
 		}
 		
-//		// use CAS
-//		while(true) {
-//			Statistics existingValue = statistics.get();
-//			Statistics newValue = new Statistics(sum/count, max, min, count);
-//
-//			if(statistics.compareAndSet(existingValue, newValue)) {
-//				return;
-//			}
-//		}
-		// if no data available
-		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
-			statistics = new Statistics(0d, 0d, 0d, 0l);
-			return;
+		// use CAS
+		while(true) {
+			Statistics existingValue = statistics.get();
+			Statistics newValue;
+			
+			// if no data available
+			if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+				newValue = new Statistics(0d, 0d, 0d, 0l);
+			
+			}else {
+				newValue = new Statistics(sum/count, max, min, count);
+			}
+
+			if(statistics.compareAndSet(existingValue, newValue)) {
+				return;
+			}
 		}
-		statistics = new Statistics(sum/count, max, min, count);
-		
+				
 	}
 
 	

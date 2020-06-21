@@ -7,25 +7,25 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.solactive.app.model.Statistics;
 
 /**
- * 
+ * trying non blocking algo using cas
  * @author jay
  *
  */
-public class AllTickersAggregator implements IAllTickerAggregator{
+public class AllTickersAggregatorNonBlocking implements IAllTickerAggregator{
 	
 	// setting initial capacity as 50000 and load factor as one, so that rehashing does not happen
-	private static Map<String,TickerAggregator> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
+	private static Map<String,TickerAggregatorNonBlocking> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
 	
-	//private static AtomicReference<Statistics> rootStatistics;
-	private static Statistics rootStatistics;
+	private static AtomicReference<Statistics> rootStatistics;
+	//private static Statistics rootStatistics;
 
-	public static Map<String, TickerAggregator> getTickerToAggregateMap() {
+	public static Map<String, TickerAggregatorNonBlocking> getTickerToAggregateMap() {
 		return tickerToAggregateMap;
 	}
 
 	public static Statistics getRootStatistics(long currentTime) {
 		reCalculateRoot(currentTime);
-		return rootStatistics;
+		return rootStatistics.get();
 	}
 	
 	/**
@@ -40,7 +40,7 @@ public class AllTickersAggregator implements IAllTickerAggregator{
 		double min = Double.MAX_VALUE;
 		double max = 0d;
 		
-		for(TickerAggregator ticker: tickerToAggregateMap.values()) {
+		for(TickerAggregatorNonBlocking ticker: tickerToAggregateMap.values()) {
 			Statistics tickerStats = ticker.getStatistics(currentTime);
 			if(tickerStats == null || isEmpty(tickerStats)) {
 				continue;
@@ -57,23 +57,23 @@ public class AllTickersAggregator implements IAllTickerAggregator{
 			count = count+tickerCount;
 		}
 		
-//		// use CAS
-//		while(true) {
-//            Statistics existingValue = rootStatistics.get();
-//            Statistics newValue = new Statistics(sum/count, max, min, count);
-//            
-//            if(rootStatistics.compareAndSet(existingValue, newValue)) {
-//                return;
-//            }
-//        }
-		
-		// if no data available
-		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
-			rootStatistics = new Statistics(0d, 0d, 0d, 0l);
-			return;
-		}
-		
-		rootStatistics = new Statistics(sum/count, max, min, count);
+		// use CAS
+		while(true) {
+            Statistics existingValue = rootStatistics.get();
+            Statistics newValue;
+            
+            // if no data available
+    		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+    			newValue = new Statistics(0d, 0d, 0d, 0l);
+    		}else {
+    			newValue = new Statistics(sum/count, max, min, count);
+    		}
+            
+            if(rootStatistics.compareAndSet(existingValue, newValue)) {
+                return;
+            }
+        }
+	
 		
 	}
 
