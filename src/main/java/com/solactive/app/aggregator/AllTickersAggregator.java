@@ -5,6 +5,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.solactive.app.model.Statistics;
 
+/**
+ * 
+ * @author jay
+ *
+ */
 public class AllTickersAggregator {
 	
 	private static Map<String,TickerAggregator> tickerToAggregateMap = new ConcurrentHashMap<>();

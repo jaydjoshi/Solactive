@@ -37,6 +37,9 @@ public class IndexServiceImpl implements IndexService {
 		return false;
 	}
 
+	// TODO: Actual sliding window is not implement, as we are storing stats only during inserts
+	// there can be a gap between insert requests and statistics call
+	// Also, updating stats is O(n) right now as we iterate over 60 s data.
 	@Override
 	public Statistics getStatistics(long currentTimeStamp) {
 
