@@ -50,17 +50,6 @@ public class IndexControllerTest {
 	}
 	
 	
-//	@Test
-//	public void shouldReturnDefaultMessage() throws Exception {
-//		
-//		MvcResult result = this.mockMvc.perform(get("/hello"))
-//			.andDo(print())
-//			.andExpect(status().isOk()).andReturn();
-//		
-//		System.out.println(result.getResponse().getContentAsString());
-//		
-//	}
-	
 	@Test
 	public void shouldReturnTickCreatedStatus() throws Exception {
 		Tick tick = new Tick();
@@ -70,7 +59,6 @@ public class IndexControllerTest {
 		
 		System.out.println(objectMapper.writeValueAsString(tick));
 		
-		System.out.println(this.mockMvc);
 		this.mockMvc.perform(post("/ticks")
 				.contentType("application/json")
 				.content(objectMapper.writeValueAsString(tick)))
@@ -84,7 +72,6 @@ public class IndexControllerTest {
 		tick.setPrice(100);
 		tick.setTimestamp(System.currentTimeMillis() - 60001);
 		
-		System.out.println(this.mockMvc);
 		this.mockMvc.perform(post("/ticks")
 				.contentType("application/json")
 				.content(objectMapper.writeValueAsString(tick)))
@@ -105,8 +92,7 @@ public class IndexControllerTest {
 			tick.setPrice(100+i);
 			tick.setTimestamp(currentTime - i*1000);
 			tickList.add(tick);
-			
-			System.out.println(this.mockMvc);
+		
 			this.mockMvc.perform(post("/ticks")
 					.contentType("application/json")
 					.content(objectMapper.writeValueAsString(tick)));

@@ -11,13 +11,15 @@ import com.solactive.app.model.Statistics;
 
 public class TickerAggregator {
 
-	// setting initial capacity to 100
-	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);
+	// setting initial capacity to 60
+	private PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(60, ImmutableTick.timestampComparator);
 
 	// create immutable class
-	//private  AtomicReference<Statistics>  statistics;
 	private volatile Statistics statistics;
 	private final Lock lock;
+	private volatile double avgNum ;
+	private volatile double maxNum ;
+	private volatile double minNum ;
 	
 	public TickerAggregator(){
 		
@@ -56,13 +58,13 @@ public class TickerAggregator {
 		// getMinimumTimestamp = 0 means queue is empty
 		if(getMinimumTimestamp() > 0l && (currentTime - getMinimumTimestamp() > IndexConstant.DEFAULT_SLIDING_WINDOW_MS)){
 			try {
-				//lock.lock();
+				
 				removeOldTicksFromHead(currentTime);
 				this.reCalculate();
 				
 			}
 			finally {
-				//lock.unlock();
+				
 			}
 		}
 		return statistics;
@@ -88,7 +90,7 @@ public class TickerAggregator {
 		try {
 			lock.lock();
 			removeOldTicksFromHead(currentTime);
-			tickPriorityBlockingQueue.add(e);
+			addTick(e);
 			this.reCalculate();
 		}finally {
 			lock.unlock();
@@ -100,63 +102,134 @@ public class TickerAggregator {
 	
 
 	/**
-	 * remove using remove if
-	 * @param currentTime
+	 * ex: 1,2,3,4,5,6,7,8,9,10 
+	 * total = 55
+	 * avg = 5.5
+	 * 
+	 * add 11 from queue
+	 * 1,2,3,4,5,6,7,8,9,10,11
+	 * 
+	 * avgNum = (5.5*10) +11 / 11 = 66/11 = 6
+	 * 
+	 * Also, set max and min by comparing
+	 * 
+	 * @param e
 	 */
-	@SuppressWarnings("unused")
-	@Deprecated
-	private void removeOldTicks(final long currentTime) {
-		tickPriorityBlockingQueue.removeIf(t -> (currentTime - t.getTimestamp()) > IndexConstant.DEFAULT_SLIDING_WINDOW_MS);
+	private void addTick(ImmutableTick t) {
+		tickPriorityBlockingQueue.add(t);
+		if(statistics != null) {
+			avgNum = ((statistics.getAvg() * statistics.getCount()) + t.getPrice()) / tickPriorityBlockingQueue.size();
+			maxNum = Math.max(statistics.getMax(), t.getPrice());
+			minNum = Math.min(statistics.getMin(), t.getPrice());
+		}else {
+			// first tick
+			avgNum=t.getPrice();
+			maxNum=t.getPrice();
+			minNum=t.getPrice();
+			
+		}
+		
 	}
 	
 	/**
 	 * remove from head, better performance
+	 * 
+	 * While setting avg,
+	 * ex: 1,2,3,4,5,6,7,8,9,10 
+	 * total = 55
+	 * avg = 5.5
+	 * 
+	 * remove 1 from queue
+	 * 2,3,4,5,6,7,8,9,10
+	 * 
+	 * avgNum = (5.5*10) -1 / 9 = 54/9 = 6
+	 * 
+	 * 
+	 * While setting max,
+	 * scenario 1: stats.max is greater than removed tick. set threadLocal max to stats.max
+	 * ex: 1,2,3,4,5,6,7,8,9,10 
+	 * remove :1
+	 * stats.max = 10
+	 * 10 >1 -> 10
+	 * time complexity : O(1)
+	 * 
+	 * scenario 2: stats.max is equal to the removed tick price. we need to recalculate max
+	 * ex: 11,2,3,4,5,6,7,8,9,10
+	 * remove :11
+	 * stats.max =11
+	 * 11 = 11 -> set Double.MAX_VALUE will be recalculated later
+	 * time complexity : O(n)
+	 * worst case O(n) : set Double.MAX_VALUE when t.getPrice() was the max element, we need to recalculate max now
+	 * set maxNum to Double.MAX_VALUE as we do not want to recalculate here within while loop, we will do it in reCalculate() method
+	 * 
+	 * While setting min,
+	 * scenario 1: stats.min is less than removed tick. set threadLocal max to stats.min
+	 * ex: 5,2,3,4,5,6,7,8,9,10 
+	 * remove :5
+	 * stats.min = 2
+	 * 2 < 5 -> 2
+	 * time complexity : O(1)
+	 * 
+	 * scenario 2: stats.min is equal to the removed tick price. we need to recalculate min
+	 * ex: 1,2,3,4,5,6,7,8,9,10
+	 * remove :1
+	 * stats.min =1
+	 * 1 = 1 -> set Double.MIN_VALUE will be recalculated later
+	 * time complexity : O(n)
+	 * worst case O(n) : set Double.MIN_VALUE when t.getPrice() was the min element, we need to recalculate min now
+	 * set minNum to Double.MIN_VALUE as we do not want to recalculate here within while loop, we will do it in reCalculate() method
+	 * 
 	 * @param currentTime
 	 */
 	private void removeOldTicksFromHead(final long currentTime) {
 		
 		while( !tickPriorityBlockingQueue.isEmpty() && ((currentTime - tickPriorityBlockingQueue.peek().getTimestamp()) > IndexConstant.DEFAULT_SLIDING_WINDOW_MS)) {
-			tickPriorityBlockingQueue.poll();
+			//if we are removing old ticks means stats is already prepared
+			ImmutableTick t = tickPriorityBlockingQueue.poll();
+			avgNum=((statistics.getAvg() * statistics.getCount()) - t.getPrice()) / tickPriorityBlockingQueue.size();
+			maxNum=statistics.getMax() > t.getPrice() ? statistics.getMax() : Double.MAX_VALUE;
+			minNum=statistics.getMin() < t.getPrice() ? statistics.getMin() : Double.MIN_VALUE;
 		}
 		
 	}
 	
 	/**
 	 * recalculate statistics of the ticker after each inserts
-	 * TODO : this is bruteforce O(n), see if calculations can be done while removing
+	 * setting count and avg will be O(1)
+	 * 
+	 * min and max : 
+	 * best case O(1)
+	 * worst case O(n)
+	 * 
 	 */
 	private void reCalculate() {
 			
 		long count = tickPriorityBlockingQueue.size();
-		double sum=0d;
-		double min = Double.MAX_VALUE;
-		double max = 0d;
 		
-		if(!tickPriorityBlockingQueue.isEmpty()) {
+		double min = minNum;
+		double max = maxNum;
+		
+		if(!tickPriorityBlockingQueue.isEmpty() && (max== (Double.MAX_VALUE) || min == (Double.MIN_VALUE))) {
+			// so new values can be calculated
+			min=Double.MAX_VALUE;
+			max=0d;
+			
 			for(ImmutableTick tick : tickPriorityBlockingQueue) {
 				double price = tick.getPrice();
-				sum = sum+price;
 				min = Math.min(min, price);
 				max = Math.max(max, price);
 				
 			}
 		}
-		
-//		// use CAS
-//		while(true) {
-//			Statistics existingValue = statistics.get();
-//			Statistics newValue = new Statistics(sum/count, max, min, count);
-//
-//			if(statistics.compareAndSet(existingValue, newValue)) {
-//				return;
-//			}
-//		}
+
 		// if no data available
-		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+		if(tickPriorityBlockingQueue.isEmpty()) {
 			statistics = new Statistics(0d, 0d, 0d, 0l);
 			return;
 		}
-		statistics = new Statistics(sum/count, max, min, count);
+		
+		statistics = new Statistics(avgNum, max, min, count);
+	
 		
 	}
 
