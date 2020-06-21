@@ -14,17 +14,17 @@ public interface IndexService {
 
 	/**
 	 * 
-	 * @param currentTimeStamp
-	 * @return
+	 * 
+	 * @return Ststistics of all tickers
 	 */
-	public Statistics getStatistics(long currentTimeStamp);
+	public Statistics getStatistics();
 
 	/**
 	 * 
-	 * @param currentTimeStamp
+	 * 
 	 * @param instrument
-	 * @return
+	 * @return Statistics of single ticker
 	 */
-	public Statistics getStatistics(long currentTimeStamp, String instrument) ;
+	public Statistics getStatistics(String instrument) ;
 
 }

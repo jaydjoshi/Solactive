@@ -20,12 +20,12 @@ public class AllTickersAggregator {
 		return tickerToAggregateMap;
 	}
 
-	public static Statistics getRootStatistics() {
+	public static Statistics getRootStatistics(long currentTime) {
 		return rootStatistics;
 	}
 	
 	
-	public static void reCalculateRoot() {
+	public static void reCalculateRoot(long currentTime) {
 		
 		long count = 0l;
 		double sum=0d;
@@ -33,7 +33,7 @@ public class AllTickersAggregator {
 		double max = 0d;
 		
 		for(TickerAggregator ticker: tickerToAggregateMap.values()) {
-			Statistics tickerStats = ticker.getStatistics();
+			Statistics tickerStats = ticker.getStatistics(currentTime);
 			if(tickerStats == null) {
 				continue;
 			}

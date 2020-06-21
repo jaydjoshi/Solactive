@@ -3,11 +3,13 @@
  */
 package com.solactive.app.model;
 
+import java.util.Comparator;
+
 /**
  * @author jay
  * POJO class of Tick
  */
-public class Tick implements Comparable<Tick>{
+public class Tick{
 	
 	private String instrument;
 	private double price;
@@ -68,13 +70,7 @@ public class Tick implements Comparable<Tick>{
 		return "Tick [instrument=" + instrument + ", price=" + price + ", timestamp=" + timestamp + "]";
 	}
 	
-	@Override
-	public int compareTo(Tick o) {
-	
-		int difference = (int) (this.timestamp - o.timestamp);
-		return difference;
-	}
-	
+	public static Comparator<Tick> timestampComparator = (x,y) -> Long.compare(x.timestamp, y.timestamp);
 	
 	
 }

@@ -28,7 +28,7 @@ public class IndexServiceImpl implements IndexService {
 		try {
 			logger.debug("inside insertTicks");
 			final long currentTime = System.currentTimeMillis();
-			map.computeIfAbsent(tick.getInstrument(), k -> new TickerAggregator()).add(tick, currentTime);
+			map.computeIfAbsent(tick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(tick, currentTime);
 		} finally {
 
 		}
@@ -38,25 +38,48 @@ public class IndexServiceImpl implements IndexService {
 		return false;
 	}
 
-	// TODO: Actual sliding window is not implement, as we are storing stats only during inserts
-	// there can be a gap between insert requests and statistics call
+	/**
+	 * two scenarios for time complexity,
+	 * 1. best case O(1) : When all the ticker stats are within last 60 s i.e. no recalculation needed
+	 * 2. worst case O(n*m) : When no ticks for any ticker is recieved in last 60 s window 
+	 * where,
+	 *  n = number of tickers
+	 *  m = avg number of ticks in queue for all tickers
+	 * worst case might degrade to O(n^2) for high number of tickers and high number of avg ticks
+	 * 
+	 * TODO : improve worst case
+	 * 
+	 * Space complexity : O(1)
+	 * 
+	 */
 	@Override
-	public Statistics getStatistics(long currentTimeStamp) {
+	public Statistics getStatistics() {
 
+		final long currentTime = System.currentTimeMillis();
 		if (map.isEmpty()) {
 			logger.error("No ticker data found in last 60s");
 			throw new NoTickerAvailableException();
 		} else {
-			return AllTickersAggregator.getRootStatistics();
+			return AllTickersAggregator.getRootStatistics(currentTime);
 		}
 
 	}
 
+	/**
+	 * two scenarios for time complexity,
+	 * 1. best case O(1) : When stats for the instrument are within last 60 s
+	 * 2. worst case O(n) : When stats are outside last 60 s window i.e. 
+	 * we need to remove ticks from queue and recalculate stats. We might have to remove all the elements in worst case.
+	 * 
+	 * Space complexity : O(1)
+	 * 
+	 */
 	@Override
-	public Statistics getStatistics(long currentTimeStamp, String instrument) {
+	public Statistics getStatistics( String instrument) {
 
+		final long currentTime = System.currentTimeMillis();
 		if (map.containsKey(instrument)) {
-			return map.get(instrument).getStatistics();
+			return map.get(instrument).getStatistics(currentTime);
 		} else {
 			logger.error("ticker {} data is not found in last 60s", instrument);
 			throw new TickerNotAvailableException();
