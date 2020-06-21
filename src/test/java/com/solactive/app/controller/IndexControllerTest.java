@@ -31,7 +31,7 @@ import com.solactive.app.model.Tick;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-public class IndexControllerTest {
+class IndexControllerTest {
 	
 	@Autowired
 	private IndexController indexController;
@@ -43,7 +43,7 @@ public class IndexControllerTest {
 	private ObjectMapper objectMapper;
 
 	@Test
-	public void contexLoads() throws Exception {
+	void contexLoads() throws Exception {
 		assertThat(indexController).isNotNull();
 		assertThat(mockMvc).isNotNull();
 		assertThat(objectMapper).isNotNull();
@@ -51,7 +51,7 @@ public class IndexControllerTest {
 	
 	
 	@Test
-	public void shouldReturnTickCreatedStatus() throws Exception {
+	void shouldReturnTickCreatedStatus() throws Exception {
 		Tick tick = new Tick();
 		tick.setInstrument("IBM");
 		tick.setPrice(100);
@@ -66,7 +66,7 @@ public class IndexControllerTest {
 	}
 	
 	@Test
-	public void shouldReturnTickNoContentStatus() throws Exception {
+	void shouldReturnTickNoContentStatus() throws Exception {
 		Tick tick = new Tick();
 		tick.setInstrument("IBM");
 		tick.setPrice(100);
@@ -80,7 +80,7 @@ public class IndexControllerTest {
 	
 	
 	@Test
-	public void testSingleTick() throws Exception {
+	void testSingleTick() throws Exception {
 		
 		List<Tick> tickList = new ArrayList<>();
 		
@@ -112,7 +112,7 @@ public class IndexControllerTest {
 	
 
 	@Test
-	public void testSingleTickRequest() throws Exception {
+	void testSingleTickRequest() throws Exception {
 		
 		List<Tick> tickList = new ArrayList<>();
 		
@@ -146,7 +146,7 @@ public class IndexControllerTest {
 	}
 	
 	@Test
-	public void testMultipleTickerRequest() throws Exception {
+	void testMultipleTickerRequest() throws Exception {
 		
 		List<Tick> tickList = new ArrayList<>();
 		

@@ -47,7 +47,7 @@ public class IndexController {
 		indexRequestValidator.validate(tick, currentTimeStamp);
 		
 		getServiceImpl().insertTicks(tick);
-		return new ResponseEntity<Success>(HttpStatus.CREATED);
+		return new ResponseEntity<>(HttpStatus.CREATED);
 		
 	}
 	

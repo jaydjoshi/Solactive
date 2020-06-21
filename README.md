@@ -42,5 +42,5 @@ Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sen
 POST Ticks HTTP Request|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
 TOTAL|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
 
-## Whether you liked the challenge?
+## Whether I liked the challenge?
 Absolutely! challenge is fantastic. had a great time working on it. Kudos to the team who created this challenge. :)

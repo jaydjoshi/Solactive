@@ -8,12 +8,11 @@ import org.springframework.util.StringUtils;
 import com.solactive.app.constant.IndexConstant;
 import com.solactive.app.exception.InvalidTickException;
 import com.solactive.app.model.Tick;
-import com.solactive.app.service.impl.IndexServiceImpl;
 
 @Component
 public class IndexRequestValidator {
 	
-	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(IndexRequestValidator.class);
 	
 	/**
 	 * validate the request
@@ -21,7 +20,7 @@ public class IndexRequestValidator {
 	 * @param currentTimeStamp
 	 * @throws InvalidTickException
 	 */
-	public void validate(Tick tick, long currentTimeStamp) throws InvalidTickException {
+	public void validate(Tick tick, long currentTimeStamp) {
 	
 		if(tick.getTimestamp() < (currentTimeStamp - IndexConstant.DEFAULT_SLIDING_WINDOW_MS)) {
 			logger.error(IndexConstant.TICK_OLDER_THAN_60_SECONDS_MESSAGE);

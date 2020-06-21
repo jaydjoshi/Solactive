@@ -27,6 +27,10 @@ public class AllTickersAggregatorNonBlocking {
 		return rootStatistics.get();
 	}
 	
+	private AllTickersAggregatorNonBlocking(){
+		
+	}
+	
 	/**
 	 *  recalculates stats at all instruments level
 	 *  

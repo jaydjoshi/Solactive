@@ -15,6 +15,7 @@ public class AllTickersAggregator {
 	// setting initial capacity as 50000 and load factor as one, so that rehashing does not happen
 	private static Map<String,TickerAggregator> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
 	
+	// volatile and immutable
 	private static volatile Statistics rootStatistics;
 
 	public static Map<String, TickerAggregator> getTickerToAggregateMap() {
@@ -24,6 +25,10 @@ public class AllTickersAggregator {
 	public static Statistics getRootStatistics(long currentTime) {
 		reCalculateRoot(currentTime);
 		return rootStatistics;
+	}
+	
+	private AllTickersAggregator() {
+	    
 	}
 	
 	/**

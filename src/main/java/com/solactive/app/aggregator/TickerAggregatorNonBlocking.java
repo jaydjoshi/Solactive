@@ -55,15 +55,10 @@ public class TickerAggregatorNonBlocking {
 		
 		// getMinimumTimestamp = 0 means queue is empty
 		if(getMinimumTimestamp() > 0l && (currentTime - getMinimumTimestamp() > IndexConstant.DEFAULT_SLIDING_WINDOW_MS)){
-			try {
 
-				removeOldTicksFromHead(currentTime);
-				this.reCalculate();
-				
-			}
-			finally {
-				
-			}
+			removeOldTicksFromHead(currentTime);
+			this.reCalculate();
+			
 		}
 		return statistics.get();
 	}
@@ -85,15 +80,12 @@ public class TickerAggregatorNonBlocking {
 	 */
 	public int addAndUpdateStatistics(ImmutableTick e, final long currentTime) {
 		
-		try {
 
-			removeOldTicksFromHead(currentTime);
-			tickPriorityBlockingQueue.add(e);
-			this.reCalculate();
-		}finally {
+		removeOldTicksFromHead(currentTime);
+		tickPriorityBlockingQueue.add(e);
+		this.reCalculate();
 
-		}
-		
+
 		return tickPriorityBlockingQueue.size();
 		
 	}
