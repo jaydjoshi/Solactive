@@ -16,7 +16,7 @@ public class AllTickersAggregatorNonBlocking implements IAllTickerAggregator{
 	// setting initial capacity as 50000 and load factor as one, so that rehashing does not happen
 	private static Map<String,TickerAggregatorNonBlocking> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
 	
-	private static AtomicReference<Statistics> rootStatistics;
+	private static AtomicReference<Statistics> rootStatistics = new AtomicReference<>();
 	//private static Statistics rootStatistics;
 
 	public static Map<String, TickerAggregatorNonBlocking> getTickerToAggregateMap() {
@@ -73,7 +73,6 @@ public class AllTickersAggregatorNonBlocking implements IAllTickerAggregator{
                 return;
             }
         }
-	
 		
 	}
 

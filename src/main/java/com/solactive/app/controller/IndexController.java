@@ -1,6 +1,7 @@
 package com.solactive.app.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.solactive.app.factory.IndexServiceFactory;
 import com.solactive.app.model.Statistics;
 import com.solactive.app.model.Tick;
 import com.solactive.app.service.IndexService;
@@ -22,8 +24,16 @@ public class IndexController {
 	@Autowired
 	private IndexRequestValidator indexRequestValidator;
 	
-	@Autowired
-	private IndexService indexService;
+	@Autowired 
+	private IndexServiceFactory indexServiceFactory;
+	
+	@Value("${var.threading.algorithm}")
+	private String threadingAlgo;
+	
+	public IndexService getServiceImpl(){
+		IndexService indexServiceImpl = indexServiceFactory.getInstance(threadingAlgo);
+		return indexServiceImpl;
+	}
 	
 	/**
 	 * 
@@ -36,7 +46,7 @@ public class IndexController {
 		
 		indexRequestValidator.validate(tick, currentTimeStamp);
 		
-		indexService.insertTicks(tick);
+		getServiceImpl().insertTicks(tick);
 		return new ResponseEntity<Success>(HttpStatus.CREATED);
 		
 	}
@@ -48,7 +58,7 @@ public class IndexController {
 	@GetMapping("/statistics")
 	public Statistics getStatistics() {
 		
-		return indexService.getStatistics();
+		return getServiceImpl().getStatistics();
 		
 	}
 	
@@ -60,7 +70,7 @@ public class IndexController {
 	@GetMapping("/statistics/{instrument}")
 	public Statistics getStatisticsOfInstrument(@PathVariable String instrument) {
 		
-		return indexService.getStatistics(instrument);
+		return getServiceImpl().getStatistics(instrument);
 		
 	}
 	

@@ -20,21 +20,24 @@ public class TickerAggregatorNonBlocking implements ITickerAggregator{
 	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);
 
 	// create immutable class
-	private  AtomicReference<Statistics>  statistics;
+	private  AtomicReference<Statistics>  statistics = new AtomicReference<Statistics>();
 	//private volatile Statistics statistics;
-	private final Lock lock;
+	
 	
 	public TickerAggregatorNonBlocking(){
 		
-		lock = new ReentrantLock();
+		
 	}
+	
 	
 	@Override
 	public String toString() {
-		return "TickerQueue [tickPriorityBlockingQueue=" + tickPriorityBlockingQueue + ", statistics=" + statistics
-				+ ", lock=" + lock + "]";
+		return "TickerAggregatorNonBlocking [tickPriorityBlockingQueue=" + tickPriorityBlockingQueue + ", statistics="
+				+ statistics + "]";
 	}
-	
+
+
+
 	/**
 	 * 
 	 * @return min timestamp in the queue
@@ -149,6 +152,7 @@ public class TickerAggregatorNonBlocking implements ITickerAggregator{
 		
 		// use CAS
 		while(true) {
+			
 			Statistics existingValue = statistics.get();
 			Statistics newValue;
 			
@@ -159,6 +163,7 @@ public class TickerAggregatorNonBlocking implements ITickerAggregator{
 			}else {
 				newValue = new Statistics(sum/count, max, min, count);
 			}
+			
 
 			if(statistics.compareAndSet(existingValue, newValue)) {
 				return;
