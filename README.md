@@ -13,15 +13,18 @@ cd to the cloned project
 ## Assumptions
 1. No updates are performed to tick in the application
 2. price of an instrument cannot be negative
+3. We will get data for roughly 50,000 companies in the world
+source : https://www.theglobaleconomy.com/rankings/listed_companies/
 
 ## Improvements
 1. More testing
+2. Write JMH tests
 
 ## TODO Priority
 1. accuracy
 	- implement get call scenarios (done)
 2. efficiency
-	- use, volatile, atomic and final. reCalculate
+	- use, volatile, atomic and final (done). reCalculate
 3. testing
 	JMH and Jmeter and curl
 4. Use cas instead of locking

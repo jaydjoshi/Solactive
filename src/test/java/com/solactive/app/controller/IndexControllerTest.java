@@ -97,7 +97,7 @@ public class IndexControllerTest {
 		System.out.println("currentTime: "+currentTime);
 		for(int i=0; i< 100; i++) {
 			Tick tick = new Tick();
-			tick.setInstrument("MSFT");
+			tick.setInstrument("MS");
 			tick.setPrice(100+i);
 			tick.setTimestamp(currentTime - i*1000);
 			tickList.add(tick);
@@ -108,7 +108,7 @@ public class IndexControllerTest {
 					
 		}
 		
-		this.mockMvc.perform(get("/statistics/MSFT"))
+		this.mockMvc.perform(get("/statistics/MS"))
 			.andExpect(status().isOk())
 			.andExpect(MockMvcResultMatchers.jsonPath("$.avg").value(129.5d))
 			.andExpect(MockMvcResultMatchers.jsonPath("$.max").value(159d))

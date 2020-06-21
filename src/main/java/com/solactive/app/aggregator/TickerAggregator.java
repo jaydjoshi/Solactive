@@ -11,6 +11,7 @@ import com.solactive.app.model.Statistics;
 
 public class TickerAggregator{
 
+	// setting initial capacity to 100
 	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);
 
 	// create immutable class
@@ -78,19 +79,18 @@ public class TickerAggregator{
 	 * @param currentTime
 	 * @return
 	 */
-	public boolean addAndUpdateStatistics(ImmutableTick e, final long currentTime) {
+	public int addAndUpdateStatistics(ImmutableTick e, final long currentTime) {
 		
-		boolean val = false;
 		try {
 			lock.lock();
 			removeOldTicksFromHead(currentTime);
-			val = tickPriorityBlockingQueue.add(e);
+			tickPriorityBlockingQueue.add(e);
 			this.reCalculate();
 		}finally {
 			lock.unlock();
 		}
 		
-		return val;
+		return tickPriorityBlockingQueue.size();
 		
 	}
 	

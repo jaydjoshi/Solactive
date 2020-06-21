@@ -33,16 +33,18 @@ public class IndexServiceImpl implements IndexService {
 	@Override
 	public void insertTicks(Tick tick) {
 
+		int size;
 		logger.debug("inside insertTicks");
 		try {
 			ImmutableTick immTick = convertToImmutableTick(tick);
 			final long currentTime = System.currentTimeMillis();
-			instrumentToTickerAggregatorMap.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(immTick, currentTime);
+			size = instrumentToTickerAggregatorMap.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregator()).addAndUpdateStatistics(immTick, currentTime);
 		} catch(Exception e) {
 			logger.error("Unable to insert ticker {} data", tick);
 			throw new InvalidTickException();
 		}
 		logger.debug("Map: \n" + instrumentToTickerAggregatorMap);
+		logger.info("Instrument {} inserted, total size of {} ticks is {}: ", tick.getInstrument(), tick.getInstrument(), size);
 
 	}
 
