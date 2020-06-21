@@ -14,7 +14,7 @@ import com.solactive.app.model.Statistics;
  * @author jay
  *
  */
-public class TickerAggregatorNonBlocking implements ITickerAggregator{
+public class TickerAggregatorNonBlocking {
 
 	// setting initial capacity to 100
 	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);

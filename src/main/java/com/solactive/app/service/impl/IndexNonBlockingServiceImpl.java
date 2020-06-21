@@ -40,7 +40,7 @@ public class IndexNonBlockingServiceImpl implements IndexService {
 			final long currentTime = System.currentTimeMillis();
 			size = instrumentToTickerAggregatorMap.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregatorNonBlocking()).addAndUpdateStatistics(immTick, currentTime);
 		} catch(Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			logger.error("Unable to insert ticker {} data", tick.getInstrument());
 			throw new InvalidTickException();
 		}

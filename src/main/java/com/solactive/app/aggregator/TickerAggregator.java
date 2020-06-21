@@ -9,7 +9,7 @@ import com.solactive.app.constant.IndexConstant;
 import com.solactive.app.model.ImmutableTick;
 import com.solactive.app.model.Statistics;
 
-public class TickerAggregator implements ITickerAggregator{
+public class TickerAggregator {
 
 	// setting initial capacity to 100
 	private volatile PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);

@@ -11,7 +11,7 @@ import com.solactive.app.model.Statistics;
  * @author jay
  *
  */
-public class AllTickersAggregator implements IAllTickerAggregator{
+public class AllTickersAggregator {
 	
 	// setting initial capacity as 50000 and load factor as one, so that rehashing does not happen
 	private static Map<String,TickerAggregator> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
