@@ -30,13 +30,13 @@ once benchmarking is done, I would remove one of the 2 classes
 Used Jmeter GUI to test post API calls.
 Used NYSE.csv data in src/main/resources/static folder
 
-### With 10 users and 10,000 iterations
+#### With 10 users and 10,000 iterations
 Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
 --- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
 POST Ticks HTTP Request|100000|83|3|1026|41.69|0.000%|119.20486|14.09|27.27|121.0
 TOTAL|100000|83|3|1026|41.69|0.000%|119.20486|14.09|27.27|121.0
 
-### With 100 users and 1000 iterations
+#### With 100 users and 1000 iterations
 Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
 --- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
 POST Ticks HTTP Request|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
