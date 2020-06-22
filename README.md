@@ -37,6 +37,8 @@ once benchmarking is done, I would remove one of the 2 classes
 Used Jmeter GUI to test post API calls.
 Used NYSE.csv data in src/main/resources/static folder
 
+### Blocking algorithm
+
 #### With 10 users and 10,000 iterations
 Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
 --- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
@@ -48,6 +50,22 @@ Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sen
 --- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
 POST Ticks HTTP Request|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
 TOTAL|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
+
+### Non blocking algorithm
+
+#### With 10 users and 10,000 iterations
+Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
+--- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
+POST Ticks HTTP Request|100000|3|0|127|3.78|0.000%|2881.26315|339.65|659.05|120.7
+TOTAL|100000|3|0|127|3.78|0.000%|2881.26315|339.65|659.05|120.7
+
+#### With 100 users and 1000 iterations
+Label|# Samples|Average|Min|Max|Std. Dev.|Error %|Throughput|Received KB/sec|Sent KB/sec|Avg. Bytes
+--- | --- | --- | --- |--- |--- |--- |--- |--- |--- |--- 
+POST Ticks HTTP Request|100000|48|0|790|56.26|0.000%|1967.18732|232.45|449.97|121.0
+TOTAL|100000|48|0|790|56.26|0.000%|1967.18732|232.45|449.97|121.0
+
+
 
 ## Notes
 1. Upgraded com.thoughtworks.xstream to 1.4.12

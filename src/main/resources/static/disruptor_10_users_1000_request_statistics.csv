@@ -1,0 +1,3 @@
+Label,# Samples,Average,Min,Max,Std. Dev.,Error %,Throughput,Received KB/sec,Sent KB/sec,Avg. Bytes
+POST Ticks HTTP Request,100000,3,0,127,3.78,0.000%,2881.26315,339.65,659.05,120.7
+TOTAL,100000,3,0,127,3.78,0.000%,2881.26315,339.65,659.05,120.7
