@@ -2,10 +2,13 @@ package com.solactive.app.aggregator;
 
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.solactive.app.constant.IndexConstant;
 import com.solactive.app.model.ImmutableTick;
 import com.solactive.app.model.Statistics;
+import com.solactive.app.model.Tick;
 
 /**
  * trying non blocking algo using cas
@@ -14,22 +17,24 @@ import com.solactive.app.model.Statistics;
  */
 public class TickerAggregatorNonBlocking {
 
-	// setting initial capacity to 60. with an assumption that we might receive 1 tick for instrument per sec
-	private PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(60, ImmutableTick.timestampComparator);
+	//setting initial capacity to 60. with an assumption that we might receive 1 tick for instrument per sec
+	private PriorityBlockingQueue<Tick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(60, Tick.timestampComparator);
 
-	// create immutable class
-	private  AtomicReference<Statistics> statistics = new AtomicReference<>();
+	// immutable and volatile class
+	private volatile Statistics statistics;
+	private final Lock lock;
 	
-	
+	public TickerAggregatorNonBlocking(){
+		
+		lock = new ReentrantLock();
+	}
 	
 	@Override
 	public String toString() {
-		return "TickerAggregatorNonBlocking [tickPriorityBlockingQueue=" + tickPriorityBlockingQueue + ", statistics="
-				+ statistics + "]";
+		return "TickerQueue [tickPriorityBlockingQueue=" + tickPriorityBlockingQueue + ", statistics=" + statistics
+				+ ", lock=" + lock + "]";
 	}
-
-
-
+	
 	/**
 	 * 
 	 * @return min timestamp in the queue
@@ -49,18 +54,24 @@ public class TickerAggregatorNonBlocking {
 	 * 		2.1. remove old ticks
 	 * 		2.2. recalculate and send statistics
 	 * 
-	 * Note - no need to recalulate root stats as reCalculateRoot() will call getStatistics of each ticker
+	 * Note - no need to recalculate root stats as reCalculateRoot() will call getStatistics of each ticker
+	 * 
+	 * lock needed to prevent thread interference
 	 */
 	public Statistics getStatistics(final long currentTime) {
 		
 		// getMinimumTimestamp = 0 means queue is empty
 		if(getMinimumTimestamp() > 0l && (currentTime - getMinimumTimestamp() > IndexConstant.DEFAULT_SLIDING_WINDOW_MS)){
-
-			removeOldTicksFromHead(currentTime);
-			this.reCalculate();
-			
+			try {
+				lock.lock();
+				removeOldTicksFromHead(currentTime);
+				this.reCalculate();
+			}
+			finally {
+				lock.unlock();
+			}
 		}
-		return statistics.get();
+		return statistics;
 	}
 	
 
@@ -78,18 +89,21 @@ public class TickerAggregatorNonBlocking {
 	 * @param currentTime
 	 * @return
 	 */
-	public int addAndUpdateStatistics(ImmutableTick e, final long currentTime) {
+	public int addAndUpdateStatistics(Tick e, final long currentTime) {
 		
-
-		removeOldTicksFromHead(currentTime);
-		tickPriorityBlockingQueue.add(e);
-		this.reCalculate();
-
-
+		try {
+			lock.lock();
+			removeOldTicksFromHead(currentTime);
+			tickPriorityBlockingQueue.add(e);
+			this.reCalculate();
+		}finally {
+			lock.unlock();
+		}
+		
 		return tickPriorityBlockingQueue.size();
 		
 	}
-	
+
 	
 	/**
 	 * remove from head, better performance
@@ -105,7 +119,7 @@ public class TickerAggregatorNonBlocking {
 	
 	/**
 	 * recalculate statistics of the ticker after each inserts
-	 * Note : this is bruteforce O(n), see if calculations can be done while removing
+	 * NOTE : this is bruteforce O(n), see if calculations can be done while removing
 	 */
 	private void reCalculate() {
 			
@@ -115,7 +129,7 @@ public class TickerAggregatorNonBlocking {
 		double max = 0d;
 		
 		if(!tickPriorityBlockingQueue.isEmpty()) {
-			for(ImmutableTick tick : tickPriorityBlockingQueue) {
+			for(Tick tick : tickPriorityBlockingQueue) {
 				double price = tick.getPrice();
 				sum = sum+price;
 				min = Math.min(min, price);
@@ -124,26 +138,13 @@ public class TickerAggregatorNonBlocking {
 			}
 		}
 		
-		// use CAS
-		while(true) {
-			
-			Statistics existingValue = statistics.get();
-			Statistics newValue;
-			
-			// if no data available
-			if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
-				newValue = new Statistics(0d, 0d, 0d, 0l);
-			
-			}else {
-				newValue = new Statistics(sum/count, max, min, count);
-			}
-			
-
-			if(statistics.compareAndSet(existingValue, newValue)) {
-				return;
-			}
+		// if no data available
+		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+			statistics = new Statistics(0d, 0d, 0d, 0l);
+			return;
 		}
-				
+		statistics = new Statistics(sum/count, max, min, count);
+		
 	}
 
 	

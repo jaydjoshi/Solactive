@@ -2,7 +2,6 @@ package com.solactive.app.aggregator;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.solactive.app.model.Statistics;
 
@@ -16,7 +15,8 @@ public class AllTickersAggregatorNonBlocking {
 	// setting initial capacity as 50000 and load factor as one, so that rehashing does not happen
 	private static Map<String,TickerAggregatorNonBlocking> tickerToAggregateMap = new ConcurrentHashMap<>(50000,1);
 	
-	private static AtomicReference<Statistics> rootStatistics = new AtomicReference<>();
+	// volatile and immutable
+	private static volatile Statistics rootStatistics;
 
 	public static Map<String, TickerAggregatorNonBlocking> getTickerToAggregateMap() {
 		return tickerToAggregateMap;
@@ -24,11 +24,11 @@ public class AllTickersAggregatorNonBlocking {
 
 	public static Statistics getRootStatistics(long currentTime) {
 		reCalculateRoot(currentTime);
-		return rootStatistics.get();
+		return rootStatistics;
 	}
 	
-	private AllTickersAggregatorNonBlocking(){
-		
+	private AllTickersAggregatorNonBlocking() {
+	    
 	}
 	
 	/**
@@ -60,22 +60,14 @@ public class AllTickersAggregatorNonBlocking {
 			count = count+tickerCount;
 		}
 		
-		// use CAS
-		while(true) {
-            Statistics existingValue = rootStatistics.get();
-            Statistics newValue;
-            
-            // if no data available
-    		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
-    			newValue = new Statistics(0d, 0d, 0d, 0l);
-    		}else {
-    			newValue = new Statistics(sum/count, max, min, count);
-    		}
-            
-            if(rootStatistics.compareAndSet(existingValue, newValue)) {
-                return;
-            }
-        }
+		
+		// if no data available
+		if(sum == 0d && min == Double.MAX_VALUE && max==0d && count==0l) {
+			rootStatistics = new Statistics(0d, 0d, 0d, 0l);
+			return;
+		}
+		
+		rootStatistics = new Statistics(sum/count, max, min, count);
 		
 	}
 

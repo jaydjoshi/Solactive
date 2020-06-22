@@ -3,6 +3,7 @@
  */
 package com.solactive.app.model;
 
+import java.util.Comparator;
 
 /**
  * @author jay
@@ -32,7 +33,12 @@ public class Tick{
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-
 	
+	@Override
+	public String toString() {
+		return "Tick [instrument=" + instrument + ", price=" + price + ", timestamp=" + timestamp + "]";
+	}
+
+	public static final Comparator<Tick> timestampComparator = (x,y) -> Long.compare(x.getTimestamp(), y.getTimestamp());
 	
 }

@@ -2,12 +2,22 @@ package com.solactive.app.service.impl;
 
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.dsl.Disruptor;
+import com.lmax.disruptor.util.DaemonThreadFactory;
+import com.solactive.app.aggregator.AllTickersAggregator;
 import com.solactive.app.aggregator.AllTickersAggregatorNonBlocking;
+import com.solactive.app.aggregator.TickerAggregator;
 import com.solactive.app.aggregator.TickerAggregatorNonBlocking;
+import com.solactive.app.disruptor.TickEvenProducer;
+import com.solactive.app.disruptor.TickEventFactory;
+import com.solactive.app.disruptor.TickEventHandler;
 import com.solactive.app.exception.InvalidTickException;
 import com.solactive.app.exception.NoTickerAvailableException;
 import com.solactive.app.exception.TickerNotAvailableException;
@@ -22,30 +32,58 @@ public class IndexNonBlockingServiceImpl implements IndexService {
 	// map of instrument to TickerAggregatorNonBlocking
 	private Map<String, TickerAggregatorNonBlocking> instrumentToTickerAggregatorMap = AllTickersAggregatorNonBlocking.getTickerToAggregateMap();
 
-	private static final Logger logger = LoggerFactory.getLogger(IndexNonBlockingServiceImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(IndexServiceImpl.class);
+	
+	// The factory for the event
+    private TickEventFactory factory = new TickEventFactory();
+
+    // Specify the size of the ring buffer, must be power of 2. setting to 2^24 -> 16777216 | 2^22 -> 4194304
+    private static final int bufferSize = 16777216;
+    
+    private Disruptor<Tick> disruptor = new Disruptor<>(factory, bufferSize, DaemonThreadFactory.INSTANCE);
+    
+    private RingBuffer<Tick> ringBuffer;
+    
+    private TickEvenProducer producer;
+	
+	
+    @PostConstruct
+	public void setDisruptor() {
+	 
+      // Connect the handler
+      disruptor.handleEventsWith(new TickEventHandler(instrumentToTickerAggregatorMap));
+
+      // Start the Disruptor, starts all threads running
+      disruptor.start();
+      
+      // Get the ring buffer from the Disruptor to be used for publishing.
+      ringBuffer = disruptor.getRingBuffer();
+
+      producer = new TickEvenProducer(ringBuffer);
+	}
 
 
 	/**
-	 * TODO: updating stats is O(n) right now as we iterate over 60 s data.
+	 * Note: updating stats is O(n) right now as we iterate over 60 s data.
 	 * @param tick
 	 * @return boolean
 	 */
 	@Override
 	public void insertTicks(Tick tick) {
 
-		int size;
 		logger.debug("inside insertTicks");
 		try {
-			ImmutableTick immTick = convertToImmutableTick(tick);
-			final long currentTime = System.currentTimeMillis();
-			size = instrumentToTickerAggregatorMap.computeIfAbsent(immTick.getInstrument(), k -> new TickerAggregatorNonBlocking()).addAndUpdateStatistics(immTick, currentTime);
+			
+			// Add data in queue and then add data to the map
+			producer.onData(tick);
+	        
 		} catch(Exception e) {
-			//e.printStackTrace();
+			
 			logger.error("Unable to insert ticker {} data", tick.getInstrument());
 			throw new InvalidTickException();
 		}
-		logger.debug("Map: \n" + instrumentToTickerAggregatorMap);
-		logger.debug("Instrument {} inserted, total size of {} ticks is {}: ", tick.getInstrument(), tick.getInstrument(), size);
+		logger.debug("Map: {}\n", instrumentToTickerAggregatorMap);
+		logger.debug("Instrument {} inserted ", tick.getInstrument());
 
 	}
 
