@@ -22,6 +22,7 @@ spring.autoconfigure.exclude=net.bull.javamelody.JavaMelodyAutoConfiguration
 4. We might get data for roughly 50,000 companies from various stock exchanges in the world
 source : https://www.theglobaleconomy.com/rankings/listed_companies/
 Hence, set initial value of map to 50,000
+5. Retry attempts in disruptor is set to 5 with 5 ms delays. Even after retrys we will log the tick and wont process it
 
 ## Improvements
 1. More testing
@@ -31,7 +32,6 @@ Hence, set initial value of map to 50,000
 5. There is duplicate code in TickerAggregatorNonBlocking and TickerAggregator class. I was trying multiple options for testing hence the duplicate code.
 once benchmarking is done, I would remove one of the 2 classes
 6. As we are dealing with financial data we should use BigDecimal instead of double
-7. I have tested with 100 users and 1000 iterative requests. Did not test with concurrent users sending parallel requests. Test it and see if performance degrades.
 
 ## JMeter test results
 Used Jmeter GUI to test post API calls.
