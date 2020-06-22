@@ -26,9 +26,9 @@ Hence, set initial value of map to 50,000
 ## Improvements
 1. More testing
 2. Write JMH tests
-3. create utility methods class and move common methods from aggregation class to Utility class
+3. Create utility methods class and move common methods from aggregation layer class to Utility class
 4. Integrate JMeter tests in the project
-5. There is lot of duplicate code in TickerAggregatorNonBlocking and TickerAggregator class. I was trying multiple options for testing hence the duplicate code.
+5. There is duplicate code in TickerAggregatorNonBlocking and TickerAggregator class. I was trying multiple options for testing hence the duplicate code.
 once benchmarking is done, I would remove one of the 2 classes
 6. As we are dealing with financial data we should use BigDecimal instead of double
 
@@ -50,7 +50,7 @@ TOTAL|100000|907|13|3766|264.66|0.000%|109.69074|12.96|25.09|121.0
 
 ## Notes
 1. Upgraded com.thoughtworks.xstream to 1.4.12
-2. Had to add spring.autoconfigure.exclude=net.bull.javamelody.JavaMelodyAutoConfiguration in application.properties because of failing junit test cases
+2. Had to add spring.autoconfigure.exclude=net.bull.javamelody.JavaMelodyAutoConfiguration in application.properties because of failing junit test cases. Currently, it is commented, uncomment to run junit cases
 
 
 ## Whether I liked the challenge?
