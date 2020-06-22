@@ -14,8 +14,8 @@ import com.solactive.app.model.Statistics;
  */
 public class TickerAggregatorNonBlocking {
 
-	// setting initial capacity to 100
-	private PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(100, ImmutableTick.timestampComparator);
+	// setting initial capacity to 60. with an assumption that we might receive 1 tick for instrument per sec
+	private PriorityBlockingQueue<ImmutableTick> tickPriorityBlockingQueue = new PriorityBlockingQueue<>(60, ImmutableTick.timestampComparator);
 
 	// create immutable class
 	private  AtomicReference<Statistics> statistics = new AtomicReference<>();

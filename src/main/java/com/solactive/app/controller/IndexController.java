@@ -31,8 +31,7 @@ public class IndexController {
 	private String threadingAlgo;
 	
 	public IndexService getServiceImpl(){
-		IndexService indexServiceImpl = indexServiceFactory.getInstance(threadingAlgo);
-		return indexServiceImpl;
+		return indexServiceFactory.getInstance(threadingAlgo);
 	}
 	
 	/**
