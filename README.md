@@ -13,7 +13,8 @@ cd to the cloned project
 ## Assumptions
 1. No updates are performed to tick in the application. Application supports only inserts. if same timestamp is entered twice, we will consider both as valid.
 2. Price of an instrument cannot be negative
-3. We will get data for roughly 50,000 companies from various stock exchanges in the world
+3. Future timestamps wont be received in the application
+4. We might get data for roughly 50,000 companies from various stock exchanges in the world
 source : https://www.theglobaleconomy.com/rankings/listed_companies/
 Hence, set initial value of map to 50,000
 
