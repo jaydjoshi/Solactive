@@ -10,6 +10,11 @@ cd to the cloned project
 ./mvnw spring-boot:run
 ```
 
+Junit test cases will fail with current code, to run junit test cases, uncomment below code from application.properties
+```
+spring.autoconfigure.exclude=net.bull.javamelody.JavaMelodyAutoConfiguration
+```
+
 ## Assumptions
 1. No updates are performed to tick in the application. Application supports only inserts. if same timestamp is entered twice, we will consider both as valid.
 2. Price of an instrument cannot be negative
