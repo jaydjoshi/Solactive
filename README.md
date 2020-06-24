@@ -4,6 +4,8 @@ Solactive code challenge solution by Jay Joshi.
 
 ## How to run the project?
 
+I ran the application on JDk 14. 
+
 ```
 git clone https://github.com/jaydjoshi/Solactive.git
 cd to the cloned project
